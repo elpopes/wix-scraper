@@ -8,13 +8,12 @@ const scrapeWithPuppeteer = async (url) => {
   const delay = (duration) =>
     new Promise((resolve) => setTimeout(resolve, duration));
 
-  await delay(3000); // 3 seconds delay
+  await delay(3000); // Initial delay for page load
 
-  // Function to auto-scroll
   await page.evaluate(async () => {
     await new Promise((resolve) => {
       var totalHeight = 0;
-      var distance = 100;
+      var distance = 200; // Increased scrolling distance
       var timer = setInterval(() => {
         var scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
@@ -24,9 +23,11 @@ const scrapeWithPuppeteer = async (url) => {
           clearInterval(timer);
           resolve();
         }
-      }, 200);
+      }, 500); // Slower interval for scrolling
     });
   });
+
+  await delay(10000); // Additional delay after scrolling to ensure all posts are loaded
 
   const content = await page.content();
   await browser.close();

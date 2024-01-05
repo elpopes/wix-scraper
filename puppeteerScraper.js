@@ -1,14 +1,18 @@
-// puppeteerScraper.js
 const puppeteer = require("puppeteer");
 
 const scrapeWithPuppeteer = async (url) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "networkidle0" });
 
+  const delay = (duration) =>
+    new Promise((resolve) => setTimeout(resolve, duration));
+
+  await delay(3000); // 3 seconds delay
+
   // Function to auto-scroll
   await page.evaluate(async () => {
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       var totalHeight = 0;
       var distance = 100;
       var timer = setInterval(() => {
@@ -20,7 +24,7 @@ const scrapeWithPuppeteer = async (url) => {
           clearInterval(timer);
           resolve();
         }
-      }, 100);
+      }, 200);
     });
   });
 

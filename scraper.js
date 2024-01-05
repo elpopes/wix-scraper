@@ -2,7 +2,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 require("dotenv").config();
 
-const WIX_BLOG_URL = "https://www.brooklynaikikai.com/blog";
+const WIX_BLOG_URL = process.env.WIX_BLOG_URL;
 
 async function scrapeData() {
   try {

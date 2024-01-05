@@ -1,14 +1,15 @@
 import dotenv from "dotenv";
-dotenv.config();
-
+import fs from "fs";
 import scrapeWithPuppeteer from "./puppeteerScraper.js";
+dotenv.config();
 
 const testPuppeteer = async () => {
   try {
     const url = process.env.WIX_BLOG_URL;
     const content = await scrapeWithPuppeteer(url);
 
-    console.log("Scraped content:", content);
+    fs.writeFileSync("scrapedContent.html", content);
+    console.log("Scraped content has been saved to scrapedContent.html");
   } catch (error) {
     console.error("Error in puppeteerTester:", error);
   }

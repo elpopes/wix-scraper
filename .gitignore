@@ -1,2 +1,4 @@
 node_modules/
 .env
+scrapedContent.html
+blogPosts.json

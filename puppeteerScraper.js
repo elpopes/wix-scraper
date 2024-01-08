@@ -1,53 +1,45 @@
 import puppeteer from "puppeteer";
 
-const scrapeSegment = async (page, lastScrollHeight) => {
-  const segmentContent = await page.evaluate(async (lastHeight) => {
+const scrapeSegment = async (page, maxNoChangeAttempts) => {
+  return await page.evaluate(async (maxAttempts) => {
     const delay = (duration) =>
       new Promise((resolve) => setTimeout(resolve, duration));
     const distance = 1000;
-    const maxAttempts = 5;
     let attempts = 0;
-    let newScrollHeight = 0;
+    let lastHeight = 0,
+      newHeight = 0;
 
-    while (attempts < maxAttempts) {
+    while (true) {
+      lastHeight = document.body.scrollHeight;
       window.scrollBy(0, distance);
       await delay(1000);
-      newScrollHeight = document.body.scrollHeight;
-      if (newScrollHeight === lastHeight) {
-        attempts++;
-      } else {
-        attempts = 0;
-      }
-      lastHeight = newScrollHeight;
-    }
-    return document.body.innerHTML;
-  }, lastScrollHeight);
+      newHeight = document.body.scrollHeight;
 
-  return segmentContent;
+      if (newHeight > lastHeight) {
+        attempts = 0;
+      } else {
+        if (++attempts >= maxAttempts) break;
+      }
+    }
+
+    return document.body.innerHTML;
+  }, maxNoChangeAttempts);
 };
 
-const scrapeWithPuppeteer = async (url) => {
-  const browser = await puppeteer.launch({ headless: false });
+const scrapeWithPuppeteer = async (url, maxNoChangeAttempts = 20) => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    timeout: 0,
+    protocolTimeout: 0,
+  });
   const page = await browser.newPage();
   page.setDefaultTimeout(600000);
   await page.goto(url, { waitUntil: "networkidle0" });
 
-  let lastScrollHeight = 0;
-  let segments = [];
-  let keepScraping = true;
-
-  while (keepScraping) {
-    const content = await scrapeSegment(page, lastScrollHeight);
-    if (content) {
-      segments.push(content);
-      lastScrollHeight = await page.evaluate(() => document.body.scrollHeight);
-    } else {
-      keepScraping = false;
-    }
-  }
+  const content = await scrapeSegment(page, maxNoChangeAttempts);
 
   await browser.close();
-  return segments.join("");
+  return content;
 };
 
 export default scrapeWithPuppeteer;

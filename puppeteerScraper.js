@@ -1,38 +1,53 @@
 import puppeteer from "puppeteer";
 
+const scrapeSegment = async (page, lastScrollHeight) => {
+  const segmentContent = await page.evaluate(async (lastHeight) => {
+    const delay = (duration) =>
+      new Promise((resolve) => setTimeout(resolve, duration));
+    const distance = 1000;
+    const maxAttempts = 5;
+    let attempts = 0;
+    let newScrollHeight = 0;
+
+    while (attempts < maxAttempts) {
+      window.scrollBy(0, distance);
+      await delay(1000);
+      newScrollHeight = document.body.scrollHeight;
+      if (newScrollHeight === lastHeight) {
+        attempts++;
+      } else {
+        attempts = 0;
+      }
+      lastHeight = newScrollHeight;
+    }
+    return document.body.innerHTML;
+  }, lastScrollHeight);
+
+  return segmentContent;
+};
+
 const scrapeWithPuppeteer = async (url) => {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
-  console.log("Navigating to URL:", url);
+  page.setDefaultTimeout(600000);
   await page.goto(url, { waitUntil: "networkidle0" });
 
-  const delay = (duration) =>
-    new Promise((resolve) => setTimeout(resolve, duration));
+  let lastScrollHeight = 0;
+  let segments = [];
+  let keepScraping = true;
 
-  await delay(5000); // Initial delay for page load
+  while (keepScraping) {
+    const content = await scrapeSegment(page, lastScrollHeight);
+    if (content) {
+      segments.push(content);
+      lastScrollHeight = await page.evaluate(() => document.body.scrollHeight);
+    } else {
+      keepScraping = false;
+    }
+  }
 
-  await page.evaluate(async () => {
-    await new Promise((resolve) => {
-      var totalHeight = 0;
-      var distance = 400; // scrolling distance
-      var timer = setInterval(() => {
-        var scrollHeight = document.body.scrollHeight;
-        window.scrollBy(0, distance);
-        totalHeight += distance;
-
-        if (totalHeight >= scrollHeight) {
-          clearInterval(timer);
-          resolve();
-        }
-      }, 500);
-    });
-  });
-
-  await delay(20000); // Additional delay after scrolling to ensure all posts are loaded
-
-  const content = await page.content();
   await browser.close();
-  return content;
+  return segments.join("");
 };
 
 export default scrapeWithPuppeteer;

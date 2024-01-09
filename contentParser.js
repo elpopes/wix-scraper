@@ -18,7 +18,7 @@ const parseBlogPostsToJson = async (url) => {
         .trim();
       const author = $(elem).find(".tQ0Q1A.user-name.dlINDG").text().trim();
       const date = $(elem).find(".post-metadata__date.time-ago").text().trim();
-      const content = $(elem).find(".k5bj-").html();
+      const content = $(elem).find(".fTEXDR").html(); // Ensure this is the correct selector for content
 
       posts.push({ title, author, date, content });
     });

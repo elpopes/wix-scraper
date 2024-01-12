@@ -12,13 +12,16 @@ const parseBlogPostsToJson = async (url) => {
     const posts = [];
 
     $(".cD_92h.nMLWs_.UitnHM").each((i, elem) => {
+      console.log($(elem).html());
+
       const title = $(elem)
-        .find(".blog-post-title-font.blog-post-title-color")
+        .find("h2.blog-post-title-font.blog-post-title-color")
+        .first()
         .text()
         .trim();
-      const author = $(elem).find(".tQ0Q1A.user-name.dlINDG").text().trim();
-      const date = $(elem).find(".post-metadata__date.time-ago").text().trim();
-      const content = $(elem).find(".fTEXDR").html(); // Ensure this is the correct selector for content
+      const author = $(elem).find("span[data-hook='user-name']").attr("title");
+      const date = $(elem).find("span[data-hook='time-ago']").attr("title");
+      const content = $(elem).find(".fTEXDR").html();
 
       posts.push({ title, author, date, content });
     });

@@ -12,16 +12,23 @@ const parseBlogPostsToJson = async (url) => {
     const posts = [];
 
     $(".cD_92h.nMLWs_.UitnHM").each((i, elem) => {
-      console.log($(elem).html());
-
       const title = $(elem)
         .find("h2.blog-post-title-font.blog-post-title-color")
-        .first()
         .text()
         .trim();
-      const author = $(elem).find("span[data-hook='user-name']").attr("title");
-      const date = $(elem).find("span[data-hook='time-ago']").attr("title");
-      const content = $(elem).find(".fTEXDR").html();
+      console.log("Title:", title); // Logs the title
+
+      const surroundingHtml = $(elem).parent().html();
+      console.log("Surrounding HTML:", surroundingHtml); // Logs the HTML structure around the title
+
+      const author = $(elem).siblings().find("span.user-name").text().trim();
+      console.log("Author:", author); // Logs the author
+
+      const date = $(elem).siblings().find("span.time-ago").text().trim();
+      console.log("Date:", date); // Logs the date
+
+      const content = $(elem).siblings().find(".fTEXDR.A2sIZ4.QEEfz0").html();
+      console.log("Content:", content); // Logs the content
 
       posts.push({ title, author, date, content });
     });

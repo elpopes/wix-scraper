@@ -10,28 +10,42 @@ const parseBlogPostsToJson = async (url) => {
     const htmlContent = await scrapeWithPuppeteer(url);
     const $ = cheerio.load(htmlContent);
     const posts = [];
+    const postElements = $(".cD_92h.nMLWs_.UitnHM");
 
-    $(".cD_92h.nMLWs_.UitnHM").each((i, elem) => {
-      const title = $(elem)
-        .find("h2.blog-post-title-font.blog-post-title-color")
-        .text()
-        .trim();
-      console.log("Title:", title); // Logs the title
-
-      const surroundingHtml = $(elem).parent().html();
-      console.log("Surrounding HTML:", surroundingHtml); // Logs the HTML structure around the title
-
+    postElements.each((i, elem) => {
+      const title = $(elem).find("h2.blog-post-title-font.blog-post-title-color").text().trim();
       const author = $(elem).siblings().find("span.user-name").text().trim();
-      console.log("Author:", author); // Logs the author
-
       const date = $(elem).siblings().find("span.time-ago").text().trim();
-      console.log("Date:", date); // Logs the date
 
-      const content = $(elem).siblings().find(".fTEXDR.A2sIZ4.QEEfz0").html();
-      console.log("Content:", content); // Logs the content
+      // Capture the full HTML for the post
+        let fullPostHtml = "";
+        if (i + 1 < postElements.length) {
+            fullPostHtml = htmlContent.substring(
+            htmlContent.indexOf($.html(elem)),
+            htmlContent.indexOf($.html(postElements[i + 1]))
+            );
+        } else {
+            fullPostHtml = htmlContent.substring(htmlContent.indexOf($.html(elem)));
+        }
 
-      posts.push({ title, author, date, content });
-    });
+        const $postHtml = cheerio.load(fullPostHtml);
+        $postHtml('*').removeAttr('style'); // Remove all inline styles
+        $postHtml('script').remove();       // Remove script tagsattributes
+        $postHtml('style').remove();
+
+
+        const content = $postHtml('.post-content__body').html() || "Content not found";
+
+
+        console.log(`--- Post ${i + 1} Start ---`);
+        console.log("Title:", title);
+        console.log("Author:", author);
+        console.log("Date:", date);
+        console.log("Content:", content);
+        console.log(`--- Post ${i + 1} End ---\n`);
+
+        posts.push({ title, author, date, content });
+});
 
     return posts;
   } catch (error) {
@@ -43,9 +57,11 @@ const parseBlogPostsToJson = async (url) => {
 const WIX_BLOG_URL = process.env.WIX_BLOG_URL;
 
 async function run() {
-  const blogPosts = await parseBlogPostsToJson(WIX_BLOG_URL);
-  fs.writeFileSync("blogPosts.json", JSON.stringify(blogPosts, null, 2));
-  console.log("Blog posts have been parsed and saved to blogPosts.json");
-}
+ 
 
-run();
+    const blogPosts = await parseBlogPostsToJson(WIX_BLOG_URL);
+    fs.writeFileSync("blogPosts.json", JSON.stringify(blogPosts, null, 2));
+    console.log("Blog posts have been parsed and saved to blogPosts.json");
+  }
+  
+  run();

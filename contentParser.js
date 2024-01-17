@@ -30,13 +30,16 @@ const parseBlogPostsToJson = async (url) => {
 
         const $postHtml = cheerio.load(fullPostHtml);
         $postHtml('*').removeAttr('style'); // Remove all inline styles
-        $postHtml('script').remove();       // Remove script tagsattributes
-        $postHtml('style').remove();
+        $postHtml('script, style').remove(); // Remove script and style tags
 
+        // Extract text from each paragraph tag and concatenate them with line breaks
+        let content = '';
+        $postHtml('.post-content__body p').each(function () {
+        content += $postHtml(this).text() + '\n'; // Append text with a line break
+        });
 
-        const content = $postHtml('.post-content__body').html() || "Content not found";
-
-
+        content = content.trim() || "Content not found";
+        
         console.log(`--- Post ${i + 1} Start ---`);
         console.log("Title:", title);
         console.log("Author:", author);

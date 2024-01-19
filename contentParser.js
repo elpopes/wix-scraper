@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import cheerio from "cheerio";
 import scrapeWithPuppeteer from "./puppeteerScraper.js";
+import { cleanContent } from "./contentCleaner.js"; // Import the cleanContent function
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ const parseBlogPostsToJson = async (url) => {
       });
 
       content = content.trim() || "Content not found";
+      content = cleanContent(content); // Clean the content
 
       console.log(`--- Post ${i + 1} Start ---`);
       console.log("Title:", title);

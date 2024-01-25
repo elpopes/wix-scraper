@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import axios from "axios";
 import { extractUniqueAuthors } from "./authorsExtractor.js";
+import fs from "fs";
 
 dotenv.config();
 
@@ -8,7 +9,7 @@ const spaceId = process.env.CONTENTFUL_SPACE_ID;
 const managementToken = process.env.CONTENTFUL_MANAGEMENT_TOKEN;
 const environmentId = "testing";
 
-export const addAuthorToContentful = async (authorName) => {
+const addAuthorToContentful = async (authorName) => {
   try {
     const slug = authorName.toLowerCase().split(" ").join("-");
     const authorData = {
@@ -33,7 +34,6 @@ export const addAuthorToContentful = async (authorName) => {
       }
     );
 
-    console.log("Author added:", response.data);
     return response.data.sys.id;
   } catch (error) {
     console.error("Error adding author:", error);
@@ -43,17 +43,17 @@ export const addAuthorToContentful = async (authorName) => {
 
 const addAllAuthors = async () => {
   const authors = extractUniqueAuthors();
-  const authorIdMapping = {};
+  const authorIdMap = {};
 
   for (const author of authors) {
     const authorId = await addAuthorToContentful(author);
     if (authorId) {
-      authorIdMapping[author] = authorId;
+      authorIdMap[author] = authorId;
     }
   }
 
-  console.log("Author-ID mapping:", authorIdMapping);
-  return authorIdMapping;
+  fs.writeFileSync("authorIdMap.json", JSON.stringify(authorIdMap, null, 2));
+  console.log("Author ID mapping saved to authorIdMap.json");
 };
 
 addAllAuthors();

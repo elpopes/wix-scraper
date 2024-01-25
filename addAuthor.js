@@ -34,16 +34,26 @@ export const addAuthorToContentful = async (authorName) => {
     );
 
     console.log("Author added:", response.data);
+    return response.data.sys.id;
   } catch (error) {
     console.error("Error adding author:", error);
+    return null;
   }
 };
 
 const addAllAuthors = async () => {
   const authors = extractUniqueAuthors();
+  const authorIdMapping = {};
+
   for (const author of authors) {
-    await addAuthorToContentful(author);
+    const authorId = await addAuthorToContentful(author);
+    if (authorId) {
+      authorIdMapping[author] = authorId;
+    }
   }
+
+  console.log("Author-ID mapping:", authorIdMapping);
+  return authorIdMapping;
 };
 
 addAllAuthors();

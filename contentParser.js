@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import cheerio from "cheerio";
 import scrapeWithPuppeteer from "./puppeteerScraper.js";
-import { cleanContent } from "./contentCleaner.js"; // Import the cleanContent function
+import { cleanContent } from "./contentCleaner.js";
 
 dotenv.config();
 

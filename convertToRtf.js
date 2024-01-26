@@ -122,4 +122,10 @@ const convertBlogContentToRtf = (filePath) => {
 
 const filePath = "./blogPosts.json";
 const contentfulBlogPosts = convertBlogContentToRtf(filePath);
-console.log(JSON.stringify(contentfulBlogPosts, null, 2));
+fs.writeFileSync(
+  "contentfulBlogPosts.json",
+  JSON.stringify(contentfulBlogPosts, null, 2)
+);
+console.log(
+  "Transformed blog posts have been saved to contentfulBlogPosts.json"
+);

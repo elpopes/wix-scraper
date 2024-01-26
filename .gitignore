@@ -3,3 +3,4 @@ node_modules/
 scrapedContent.html
 blogPosts.json
 authorIdMap.json
+contentfulBlogPosts.json

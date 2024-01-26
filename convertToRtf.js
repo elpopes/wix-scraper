@@ -83,4 +83,4 @@ const convertBlogContentToRtf = (filePath) => {
 
 const filePath = "./blogPosts.json";
 const blogPostsInRtf = convertBlogContentToRtf(filePath);
-console.log(blogPostsInRtf);
+console.log(JSON.stringify(blogPostsInRtf, null, 2));

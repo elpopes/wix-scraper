@@ -63,16 +63,55 @@ export const convertHtmlToContentfulRtf = (htmlContent) => {
   return contentfulRtf;
 };
 
+const authorIdMap = JSON.parse(fs.readFileSync("./authorIdMap.json", "utf8"));
+
 const convertBlogContentToRtf = (filePath) => {
   try {
     const data = fs.readFileSync(filePath, "utf8");
     const blogPosts = JSON.parse(data);
 
     return blogPosts.map((post) => {
+      // Convert the HTML content to Contentful's RTF format
       const contentfulRtf = convertHtmlToContentfulRtf(post.content);
+
+      // Add author ID and migration tag
       return {
-        ...post,
-        content: contentfulRtf,
+        fields: {
+          title: {
+            "en-US": post.title,
+          },
+          slug: {
+            "en-US": post.title.toLowerCase().split(" ").join("-"),
+          },
+          date: {
+            "en-US": post.date,
+          },
+          body: {
+            "en-US": contentfulRtf,
+          },
+          person: {
+            "en-US": [
+              {
+                sys: {
+                  type: "Link",
+                  linkType: "Entry",
+                  id: authorIdMap[post.author],
+                },
+              },
+            ],
+          },
+        },
+        metadata: {
+          tags: [
+            {
+              sys: {
+                type: "Link",
+                linkType: "Tag",
+                id: "migration",
+              },
+            },
+          ],
+        },
       };
     });
   } catch (error) {
@@ -82,5 +121,5 @@ const convertBlogContentToRtf = (filePath) => {
 };
 
 const filePath = "./blogPosts.json";
-const blogPostsInRtf = convertBlogContentToRtf(filePath);
-console.log(JSON.stringify(blogPostsInRtf, null, 2));
+const contentfulBlogPosts = convertBlogContentToRtf(filePath);
+console.log(JSON.stringify(contentfulBlogPosts, null, 2));

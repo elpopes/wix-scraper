@@ -8,20 +8,31 @@ const spaceId = process.env.CONTENTFUL_SPACE_ID;
 const managementToken = process.env.CONTENTFUL_MANAGEMENT_TOKEN;
 const environmentId = "testing";
 
-const addBlogPostToContentful = async (blogPost, authorIdMap) => {
+const addBlogPostToContentful = async (blogPost) => {
+  const title = blogPost.fields.title["en-US"];
+  console.log(`Blog Post Title: ${title}`);
+
   try {
-    const slug = blogPost.title.toLowerCase().split(" ").join("-");
-    const authorId = authorIdMap[blogPost.author];
+    // Extracting the authorId from the person field
+    const authorId = blogPost.fields.person["en-US"][0].sys.id;
+    if (!authorId) {
+      console.error(`Author ID not found in blog post: ${title}`);
+      return;
+    }
+
+    const slug = blogPost.fields.slug["en-US"]; // Using the provided slug directly
+    console.log(`Starting to add blog post: ${title}`);
+    console.log(`Slug: ${slug}, Author ID: ${authorId}`);
 
     const blogData = {
       fields: {
-        title: { "en-US": blogPost.title },
+        title: { "en-US": title },
         slug: { "en-US": slug },
-        date: { "en-US": blogPost.date },
+        date: { "en-US": blogPost.fields.date["en-US"] },
         person: {
           "en-US": [{ sys: { type: "Link", linkType: "Entry", id: authorId } }],
         },
-        body: { "en-US": blogPost.content },
+        body: blogPost.fields.body,
       },
       metadata: {
         tags: [{ sys: { type: "Link", linkType: "Tag", id: "migration" } }],
@@ -40,20 +51,19 @@ const addBlogPostToContentful = async (blogPost, authorIdMap) => {
       }
     );
 
-    console.log(`Blog post added: ${blogPost.title}`);
+    console.log(`Blog post added successfully: ${title}`);
   } catch (error) {
-    console.error(`Error adding blog post: ${blogPost.title}`, error);
+    console.error(`Error adding blog post: ${title || "Unknown"}`, error);
   }
 };
 
 const addBlogsToContentful = async () => {
-  const authorIdMap = JSON.parse(fs.readFileSync("authorIdMap.json", "utf8"));
   const blogPosts = JSON.parse(
     fs.readFileSync("contentfulBlogPosts.json", "utf8")
   );
 
   for (const blogPost of blogPosts) {
-    await addBlogPostToContentful(blogPost, authorIdMap);
+    await addBlogPostToContentful(blogPost);
   }
 
   console.log("All blog posts have been added to Contentful");
